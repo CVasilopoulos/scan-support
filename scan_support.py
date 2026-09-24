@@ -442,9 +442,20 @@ def discover(scroll, bucket=OPEN_DATA):
     orphans lists (surface_url, volid) whose scan this bucket does not publish.
     """
     import re as _re
-    keys, _ = s3_list(bucket, "%s/segments/" % scroll)
-    surfaces = sorted({k[:k.rindex("/")] for k in keys
-                       if _re.search(r"/mesh/[^/]+\.tifxyz/(x\.tif|meta\.json)$", k)})
+    # Walk the prefix tree with a delimiter instead of listing every key. A sample's
+    # segments/ subtree holds tens of thousands of objects (meshes, intermediates,
+    # renders); the surfaces are three delimiter levels down, so this is a few dozen
+    # small requests rather than tens of paginated ones.
+    _, seg_prefixes = s3_list(bucket, "%s/segments/" % scroll, delimiter="/")
+    surfaces = []
+    for seg in seg_prefixes:
+        if seg == "%s/segments/" % scroll:
+            continue
+        _, mesh_prefixes = s3_list(bucket, seg + "mesh/", delimiter="/")
+        for m in mesh_prefixes:
+            if m.rstrip("/").endswith(".tifxyz"):
+                surfaces.append(m.rstrip("/"))
+    surfaces = sorted(set(surfaces))
     _, vol_prefixes = s3_list(bucket, "%s/volumes/" % scroll, delimiter="/")
     volumes = [p[len("%s/volumes/" % scroll):].rstrip("/") for p in vol_prefixes
                if p != "%s/volumes/" % scroll]
