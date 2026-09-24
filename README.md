@@ -177,7 +177,7 @@ uv run --no-project --with numpy --with tifffile python test_scan_support.py
 
 Builds a scan on disk with exactly one chunk written and half its voxels zero, then four
 surfaces — all on material, all in the missing chunk, all on written-but-zero voxels, and
-one full of `-1` holes — and checks all 24 reported numbers and every CLI exit code. It
+one full of `-1` holes — and checks all 35 reported numbers and every CLI exit code. It
 needs no network.
 
 ## What it found
