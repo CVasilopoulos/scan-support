@@ -107,20 +107,24 @@ for all fifteen.
 
 A single scroll's table does not say whether 46% is bad. So the tool was run the same way over
 every published surface of every sample in the bucket — `--sample 1000 --seed 1`, the whole
-catalogue, one sample at a time. That sweep is still running; **two samples are complete and
-they already settle the question.**
+catalogue, one sample at a time.
 
 The measure here is *inside support* — cells on data over cells **inside** the volume — which
 discounts the bbox overhang that the catalogue already publishes as `overlap_ratio`, so what is
 left is only the unpublished signal: cells inside the array, in chunks the scan does not hold.
 
+Five samples are complete; six of the larger ones are still being measured.
+
 ```
 sample                     n      min   median      max   worst-absent
 PHerc0009B                36    77.6%    92.9%    99.9%    11.0%
+PHerc0343P                16    75.4%    99.1%   100.0%     9.7%
+PHerc0800                  6   100.0%   100.0%   100.0%     0.0%
+PHerc0841                  6    99.7%   100.0%   100.0%     0.0%
 PHerc1447                 15     8.2%    50.6%   100.0%    79.0%
 ```
 
-Ranked over all 51 surfaces, the ten worst are **exactly** PHerc1447's ten, and then there is a
+Ranked over all 79 surfaces, the ten worst are **exactly** PHerc1447's ten, and then there is a
 gap:
 
 ```
@@ -135,22 +139,23 @@ gap:
   PHerc1447   20250502182142-on-20250521151220-8.64um   58.5%          35.2%
   PHerc1447   20250502184845-on-20250521151220-8.64um   60.6%          32.7%
   ---------------------------------------------------------------- gap
+  PHerc0343P  20250820160251-on-20250820154339-2.401um  75.4%           9.7%
   PHerc0009B  20250919135433-on-20250820154339-2.401um  77.6%          11.0%
-  PHerc0009B  20250919125754-on-20250521125136-8.64um   86.3%          10.1%
 ```
 
-The tenth-worst surface sits at 60.6% inside support and 32.7% absent; the eleventh at 77.6%
-and 11.0%. On the axis that matters — cells in chunks the scan does not hold — the worst
-surface outside PHerc1447 is **three times better** than the best of PHerc1447's ten.
+The tenth-worst surface sits at 60.6% inside support and 32.7% of its in-volume cells in absent
+chunks; the eleventh at 75.4% and 9.7%. On the axis that matters — cells in chunks the scan does
+not hold — **the worst surface outside PHerc1447 is three times better than the best of
+PHerc1447's ten.** Two whole samples, PHerc0800 and PHerc0841, lose nothing at all.
 
-PHerc. 1447 is not a scroll where this is normal. A whole healthy sample sits between 77.6% and
-99.9%, loses at most a ninth of its cells to absent chunks, and never approaches the low group.
+PHerc. 1447 is not a scroll where this is normal, and no other sample measured so far behaves
+like it.
 
-*Caveat, stated plainly:* two of the bucket's 45 samples are complete at the time of writing.
-PHerc0139 (189 surfaces over 7 scans) and the rest are still running, and a later sample could
-turn up a second low population. That would not change what is measured about PHerc1447; it
-would change how unusual it is. Anyone can refresh the whole picture with
-`summarise-sweep.py` over the sweep directory.
+*Caveat, stated plainly:* five of the bucket's 45 samples are complete here. The six largest —
+PHercParis4 (199 surfaces), PHerc0139 (189), PHerc0172, PHerc0500P2, PHerc0814 and PHerc1667 —
+are still running, and a later sample could turn up a second low population. That would not
+change what is measured about PHerc1447; it would change how unusual it is. Anyone can refresh
+the whole picture with `summarise-sweep.py` over the sweep directory.
 
 *Sampling check:* the PHerc1447 table above was measured at 3000 cells per surface; the corpus
 sweep uses 1000. Rerunning PHerc1447 at 1000 gives min 7.8% / median 50.6% / max 100.0% against

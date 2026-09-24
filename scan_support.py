@@ -517,6 +517,14 @@ def format_row(r):
                r["cells_in_absent_chunks"], r["cells_outside_volume"]))
 
 
+def write_json(path, payload):
+    """Write the result file atomically, so a kill mid-write cannot truncate it."""
+    tmp = path + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(payload, fh, indent=2)
+    os.replace(tmp, path)
+
+
 def run_scroll(args, ap):
     """--scroll: discover a scroll's surfaces, group them by scan, audit each group."""
     groups, orphans = discover(args.scroll, bucket=args.bucket)
@@ -570,6 +578,11 @@ def run_scroll(args, ap):
             r["scan"] = scan_url
             all_results.append(r)
             print(format_row(r), flush=True)
+            if args.json:
+                # After every surface, not at the end. A long audit that is killed
+                # part way through keeps everything it has already measured.
+                write_json(args.json, {"scroll": args.scroll, "mode": args.mode,
+                                       "complete": False, "results": all_results})
 
     scored = [r for r in all_results if "error" not in r]
     print("\n%d surfaces audited, %d skipped" % (len(all_results), failures))
@@ -582,8 +595,8 @@ def run_scroll(args, ap):
         print("support: min %.1f%%  median %.1f%%  max %.1f%%"
               % (100 * vals[0], 100 * vals[len(vals) // 2], 100 * vals[-1]))
     if args.json:
-        with open(args.json, "w") as fh:
-            json.dump({"scroll": args.scroll, "mode": args.mode, "results": all_results}, fh, indent=2)
+        write_json(args.json, {"scroll": args.scroll, "mode": args.mode,
+                               "complete": True, "results": all_results})
         print("wrote %s" % args.json)
     if args.fail_under is not None:
         bad = [r for r in scored if r["support"] < args.fail_under]
@@ -705,9 +718,9 @@ def main(argv=None):
         print("mode presence: '%' is an upper bound - a present chunk may still hold zeros there")
 
     if args.json:
-        with open(args.json, "w") as fh:
-            json.dump({"scan": args.scan, "level": args.level, "mode": args.mode,
-                       "scan_shape": list(scan.shape), "results": results}, fh, indent=2)
+        write_json(args.json, {"scan": args.scan, "level": args.level, "mode": args.mode,
+                               "scan_shape": list(scan.shape), "complete": True,
+                               "results": results})
         print("wrote %s" % args.json)
 
     if args.fail_under is not None:
