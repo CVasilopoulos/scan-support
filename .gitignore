@@ -1,5 +1,5 @@
 __pycache__/
 *.pyc
-*.json
+examples/*.json
 !examples/*.json
 .venv/

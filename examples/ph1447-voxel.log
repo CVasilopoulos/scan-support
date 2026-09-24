@@ -1,0 +1,30 @@
+=== scan_support --scroll PHerc1447 --mode voxel --sample 3000, 2026-09-24T08:15:50Z
+=== code sha256 6f4a2bb4b7d5048e
+PHerc1447: 15 published tifxyz surfaces over 1 scan(s)
+  20250521151220-8.640um-1.2m-116keV-masked.zarr                   15 surfaces
+
+scan  https://vesuvius-challenge-open-data.s3.amazonaws.com/PHerc1447/volumes/20250521151220-8.640um-1.2m-116keV-masked.zarr
+      level 0  shape (24297, 8343, 8343) (z,y,x)  chunks (128, 128, 128)  dtype uint8  compressor raw
+
+surface                                      cells support     on data  zero vox    absent   outside
+20250502180708-on-2...1220-8.64um.tifxyz      3000    7.5%         224       292      2331       153
+20250502180748-on-2...1220-8.64um.tifxyz      3000   40.4%        1213       116      1520       151
+20250502182142-on-2...1220-8.64um.tifxyz      3000   56.7%        1702       196      1102         0
+20250502182456-on-2...1220-8.64um.tifxyz      3000   40.2%        1207       170      1300       323
+20250502183138-on-2...1220-8.64um.tifxyz      3000   46.1%        1382       109      1509         0
+20250502183421-on-2...1220-8.64um.tifxyz      3000   38.2%        1145        90      1710        55
+20250502184201-on-2...1220-8.64um.tifxyz      3000   37.1%        1114       215      1112       559
+20250502184658-on-2...1220-8.64um.tifxyz      3000   41.4%        1241       193      1108       458
+20250502184845-on-2...1220-8.64um.tifxyz      3000   54.0%        1621       173       793       413
+20250502185519-on-2...1220-8.64um.tifxyz      3000   43.1%        1293       280      1206       221
+20250502205333-on-2...1220-8.64um.tifxyz      3000  100.0%        3000         0         0         0
+20250702235910-on-2...1220-8.64um.tifxyz      3000  100.0%        3000         0         0         0
+20250703025628-on-2...1220-8.64um.tifxyz      3000  100.0%        3000         0         0         0
+20250703034159-on-2...1220-8.64um.tifxyz      3000  100.0%        3000         0         0         0
+20251105093211-on-2...1220-8.64um.tifxyz      3000   98.2%        2947        17        36         0
+
+15 surfaces audited, 0 skipped
+8 surface(s) reach outside their own volume; those cells are in the 'outside' column and are not counted as scan data
+support: min 7.5%  median 46.1%  max 100.0%
+wrote /private/tmp/claude-503/-Users-A200270629-Desktop-projects-my-projects-Codenest/893ab8d3-e20d-4641-b3ef-546add1bd9af/scratchpad/ph1447-voxel.json
+uv run --no-project --with numpy --with tifffile --with imagecodecs python     290.64s user 58.01s system 37% cpu 15:29.44 total

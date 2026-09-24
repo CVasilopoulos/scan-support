@@ -1,0 +1,29 @@
+=== scan_support --scroll PHerc1447, presence mode, 2026-09-24T08:04:33Z
+=== code: 137a4200edad64cc
+PHerc1447: 15 published tifxyz surfaces over 1 scan(s)
+  20250521151220-8.640um-1.2m-116keV-masked.zarr                   15 surfaces
+
+scan  https://vesuvius-challenge-open-data.s3.amazonaws.com/PHerc1447/volumes/20250521151220-8.640um-1.2m-116keV-masked.zarr
+      level 0  shape (24297, 8343, 8343) (z,y,x)  chunks (128, 128, 128)  dtype uint8  compressor raw
+
+surface                                      cells support     on data  zero vox    absent   outside
+20250502180708-on-2...1220-8.64um.tifxyz     11623  17.2%?           -         -      9038       584
+20250502180748-on-2...1220-8.64um.tifxyz     10542  43.9%?           -         -      5383       530
+20250502182142-on-2...1220-8.64um.tifxyz     12081  64.1%?           -         -      4337         0
+20250502182456-on-2...1220-8.64um.tifxyz     19127  46.2%?           -         -      8105      2180
+20250502183138-on-2...1220-8.64um.tifxyz      8451  50.8%?           -         -      4157         0
+20250502183421-on-2...1220-8.64um.tifxyz     17973  39.3%?           -         -     10560       350
+20250502184201-on-2...1220-8.64um.tifxyz     14600  44.0%?           -         -      5434      2743
+20250502184658-on-2...1220-8.64um.tifxyz     17840  46.6%?           -         -      6639      2883
+20250502184845-on-2...1220-8.64um.tifxyz     19802  58.0%?           -         -      5435      2880
+20250502185519-on-2...1220-8.64um.tifxyz     15521  52.7%?           -         -      6207      1140
+20250502205333-on-2...1220-8.64um.tifxyz     14055 100.0%?           -         -         0         0
+20250702235910-on-2...1220-8.64um.tifxyz     14336 100.0%?           -         -         0         0
+20250703025628-on-2...1220-8.64um.tifxyz     23834 100.0%?           -         -         0         0
+20250703034159-on-2...1220-8.64um.tifxyz     26908 100.0%?           -         -         0         0
+20251105093211-on-2...1220-8.64um.tifxyz     28064  99.0%?           -         -       270         0
+
+15 surfaces audited, 0 skipped
+support: min 17.2%  median 52.7%  max 100.0%
+wrote /private/tmp/claude-503/-Users-A200270629-Desktop-projects-my-projects-Codenest/893ab8d3-e20d-4641-b3ef-546add1bd9af/scratchpad/ph1447-presence.json
+uv run --no-project --with numpy --with tifffile --with imagecodecs python     51.39s user 10.56s system 21% cpu 4:45.35 total

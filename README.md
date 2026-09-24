@@ -180,6 +180,14 @@ surfaces — all on material, all in the missing chunk, all on written-but-zero 
 one full of `-1` holes — and checks all 24 reported numbers and every CLI exit code. It
 needs no network.
 
+## What it found
+
+Run over every published surface of PHerc. 1447, it splits them into two populations: five
+score 98.2%–100.0%, four of those with 3000 of 3000 sampled cells on data; ten score 7.5%–56.7%,
+with between 793 and 2331 of their 3000 cells in chunks the raw masked scan does not hold at
+all. The full table, the controls, and the three explanations ruled out are in
+[FINDINGS.md](FINDINGS.md); the raw logs are in [examples/](examples/).
+
 ## Why this exists
 
 Reported by @evilaliv3 in [ScrollPrize/villa#1875](https://github.com/ScrollPrize/villa/issues/1875),
