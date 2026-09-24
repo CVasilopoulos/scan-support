@@ -358,6 +358,15 @@ coordinate offset (five surfaces on the same volume with the same convention sco
 zero shift, and shifting the worst one produces a monotonic gradient with no peak), and it is
 not the empty-cell marker.
 
+**And they are not normal.** Running the same audit over the rest of the published corpus, one
+sample at a time, the ten worst surfaces measured so far are *exactly* those ten, and then there
+is a gap: the tenth-worst sits at 60.6% of its in-volume cells on data with 32.7% in absent
+chunks, and the eleventh — from a different scroll — at 77.6% and 11.0%. A whole healthy sample,
+PHerc0009B's 36 surfaces, runs from 77.6% to 99.9% and never loses more than a ninth of its
+cells to chunks the scan does not hold. Two of the bucket's 45 samples are complete at the time
+of writing and the sweep is still running; `FINDINGS.md` carries the caveat and the command to
+refresh it.
+
 These are the surfaces a newcomer reaches for. They open in VC3D, they render, they carry
 sensible areas, and half of one of them is air.
 
