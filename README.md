@@ -175,10 +175,11 @@ metric: a surface one voxel off the true sheet still scores 100%.
 uv run --no-project --with numpy --with tifffile python test_scan_support.py
 ```
 
-Builds a scan on disk with exactly one chunk written and half its voxels zero, then four
-surfaces — all on material, all in the missing chunk, all on written-but-zero voxels, and
-one full of `-1` holes — and checks all 35 reported numbers and every CLI exit code. It
-needs no network.
+Builds a scan on disk with exactly one chunk written and half its voxels zero, then six
+surfaces — all cells on material, all in the missing chunk, all on written-but-zero voxels,
+one full of `-1` holes, one with a legitimate `-1` in a single axis, and one straddling the
+array edge with negative coordinates — and checks all 35 reported numbers and every CLI exit
+code. It needs no network and takes under a second.
 
 ## What it found
 
