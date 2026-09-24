@@ -29,12 +29,34 @@ UA = "scan_support/%s (+https://github.com/ScrollPrize/villa)" % __version__
 class Fetch:
     """Minimal read-only accessor for a local directory or an HTTP(S) prefix."""
 
-    def __init__(self, root):
+    def __init__(self, root, retries=4):
         self.root = root.rstrip("/")
         self.remote = "://" in self.root
+        self.retries = retries
         self.gets = 0
         self.heads = 0
         self.bytes = 0
+        self.retried = 0
+
+    def _open(self, req):
+        """Open with a bounded retry. A reset connection or a 5xx part way through a
+        batch must not lose the run; a 404 is an answer and is never retried."""
+        import random
+        import time
+        last = None
+        for attempt in range(self.retries):
+            try:
+                return urllib.request.urlopen(req, timeout=TIMEOUT)
+            except urllib.error.HTTPError as e:
+                if e.code < 500:
+                    raise
+                last = e
+            except (urllib.error.URLError, OSError) as e:
+                last = e
+            self.retried += 1
+            time.sleep(min(8.0, 0.5 * 2 ** attempt) * (0.5 + random.random()))
+        raise RuntimeError("cannot reach %s after %d attempts: %s"
+                           % (req.full_url, self.retries, last))
 
     def _url(self, key):
         return self.root + "/" + key
@@ -45,14 +67,12 @@ class Fetch:
         self.heads += 1
         req = urllib.request.Request(self._url(key), method="HEAD", headers={"User-Agent": UA})
         try:
-            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+            with self._open(req) as r:
                 return r.status == 200
         except urllib.error.HTTPError as e:
             if e.code in (403, 404):
                 return False
             raise
-        except urllib.error.URLError as e:
-            raise RuntimeError("cannot reach %s: %s" % (self._url(key), e)) from e
 
     def get(self, key):
         """Return bytes, or None when the object is absent."""
@@ -67,7 +87,7 @@ class Fetch:
             return data
         req = urllib.request.Request(self._url(key), headers={"User-Agent": UA})
         try:
-            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+            with self._open(req) as r:
                 data = r.read()
         except urllib.error.HTTPError as e:
             if e.code in (403, 404):
@@ -76,6 +96,42 @@ class Fetch:
         self.gets += 1
         self.bytes += len(data)
         return data
+
+    def get_byte(self, key, offset):
+        """One byte of an object, or None when the object does not exist.
+
+        A single-byte Range request answers both questions at once: 404 means the chunk
+        is not in the store, 206 carries the voxel. That is one request per cell instead
+        of a 2 MB chunk download, and it is why an exact per-cell count is affordable.
+        """
+        if not self.remote:
+            path = os.path.join(self.root, key)
+            if not os.path.exists(path):
+                return None
+            with open(path, "rb") as fh:
+                fh.seek(offset)
+                b = fh.read(1)
+            self.gets += 1
+            self.bytes += 1
+            return b[0] if b else None
+        req = urllib.request.Request(
+            self._url(key),
+            headers={"User-Agent": UA, "Range": "bytes=%d-%d" % (offset, offset)})
+        try:
+            with self._open(req) as r:
+                if r.status not in (200, 206):
+                    raise RuntimeError("%s answered %s to a Range request"
+                                       % (self._url(key), r.status))
+                data = r.read(1)
+        except urllib.error.HTTPError as e:
+            if e.code in (403, 404):
+                return None
+            if e.code == 416:
+                raise RuntimeError("%s is shorter than offset %d" % (self._url(key), offset))
+            raise
+        self.gets += 1
+        self.bytes += len(data)
+        return data[0] if data else None
 
     def get_json(self, key):
         data = self.get(key)
@@ -134,6 +190,25 @@ class Scan:
             futures = {pool.submit(self.fetch.exists, self.chunk_key(*c)): c for c in todo}
             for fut in concurrent.futures.as_completed(futures):
                 self._present[futures[fut]] = fut.result()
+
+    def byte_addressable(self):
+        """True when a voxel maps to one byte at a computable offset in its chunk."""
+        return (self.compressor is None and self.filters in (None, [])
+                and self.dtype.itemsize == 1 and self.order == "C")
+
+    def voxel_offset(self, vox):
+        cz, cy, cx = self.chunks
+        return ((int(vox[0]) % cz) * cy + (int(vox[1]) % cy)) * cx + (int(vox[2]) % cx)
+
+    def voxel_value(self, vox):
+        """Return (state, value): 'absent' with None, or 'data'/'zero' with the byte."""
+        key = self.chunk_key(vox[0] // self.chunks[0],
+                             vox[1] // self.chunks[1],
+                             vox[2] // self.chunks[2])
+        v = self.fetch.get_byte(key, self.voxel_offset(vox))
+        if v is None:
+            return "absent", None
+        return ("data" if v > 0 else "zero"), v
 
     def decodable(self):
         if self.compressor is None:
@@ -285,28 +360,42 @@ def audit(surface, scan, mode="voxel", max_chunk_gets=400, sample=None, rng=None
         result["support_is_upper_bound"] = True
         return result
 
-    if n_present > max_chunk_gets:
-        result["error"] = ("%d present chunks exceed --max-chunk-gets %d; rerun with "
-                           "--mode presence or a larger cap" % (n_present, max_chunk_gets))
-        return result
+    todo = [i for i in range(sampled)
+            if inside[i] and present[(int(cz[i]), int(cy[i]), int(cx[i]))]]
 
     on_data = on_zero = 0
-    for i in range(sampled):
-        if not inside[i]:
-            continue
-        key = (int(cz[i]), int(cy[i]), int(cx[i]))
-        if not present[key]:
-            continue
-        arr = scan.chunk_array(key)
-        if arr is None:
-            continue
-        v = arr[vox[i, 0] % scan.chunks[0],
-                vox[i, 1] % scan.chunks[1],
-                vox[i, 2] % scan.chunks[2]]
-        if v > 0:
-            on_data += 1
+    if scan.byte_addressable():
+        # One single-byte Range request per cell. No chunk is ever downloaded.
+        def read(i):
+            return scan.voxel_value(vox[i])
+        if scan.fetch.remote and workers > 1 and todo:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+                states = list(pool.map(read, todo))
         else:
-            on_zero += 1
+            states = [read(i) for i in todo]
+        for state, _ in states:
+            if state == "data":
+                on_data += 1
+            elif state == "zero":
+                on_zero += 1
+        result["reads"] = "range"
+    else:
+        if n_present > max_chunk_gets:
+            result["error"] = ("%d present chunks exceed --max-chunk-gets %d; rerun with "
+                               "--mode presence or a larger cap" % (n_present, max_chunk_gets))
+            return result
+        for i in todo:
+            arr = scan.chunk_array((int(cz[i]), int(cy[i]), int(cx[i])))
+            if arr is None:
+                continue
+            v = arr[vox[i, 0] % scan.chunks[0],
+                    vox[i, 1] % scan.chunks[1],
+                    vox[i, 2] % scan.chunks[2]]
+            if v > 0:
+                on_data += 1
+            else:
+                on_zero += 1
+        result["reads"] = "chunk"
     result["cells_on_data"] = on_data
     result["cells_on_zero"] = on_zero
     result["support"] = on_data / sampled if sampled else 0.0
@@ -460,12 +549,11 @@ def run_scroll(args, ap):
                 print("error: %s" % e, file=sys.stderr)
                 failures += 1
                 continue
-            if not args.assume_same_grid:
-                problems = grid_check([surface], scan)
-                if problems:
-                    print("skipped  %s" % problems[0])
-                    failures += 1
-                    continue
+            # No grid check here. Under --scroll the pairing is not assumed: the surface
+            # directory and the volume directory carry the same volume id, so cells past
+            # the array edge are a property of the data and are reported in the "outside"
+            # bucket rather than treated as a mispairing. The check still applies when a
+            # scan is paired by hand with --scan, where nothing corroborates it.
             r = audit(surface, scan, mode=mode, max_chunk_gets=args.max_chunk_gets,
                       sample=args.sample, rng=rng, workers=args.workers)
             r["scan"] = scan_url
@@ -474,6 +562,10 @@ def run_scroll(args, ap):
 
     scored = [r for r in all_results if "error" not in r]
     print("\n%d surfaces audited, %d skipped" % (len(all_results), failures))
+    oob = [r for r in scored if r["cells_outside_volume"]]
+    if oob:
+        print("%d surface(s) reach outside their own volume; those cells are in the "
+              "'outside' column and are not counted as scan data" % len(oob))
     if scored:
         vals = sorted(r["support"] for r in scored)
         print("support: min %.1f%%  median %.1f%%  max %.1f%%"
@@ -595,9 +687,9 @@ def main(argv=None):
 
     scored = [r for r in results if "error" not in r]
     print()
-    print("%d surfaces, %d requests (%d HEAD, %d GET, %.1f MB)"
+    print("%d surfaces, %d requests (%d HEAD, %d GET, %.1f MB, %d retried)"
           % (len(results), scan.fetch.heads + scan.fetch.gets, scan.fetch.heads,
-             scan.fetch.gets, scan.fetch.bytes / 1e6))
+             scan.fetch.gets, scan.fetch.bytes / 1e6, scan.fetch.retried))
     if args.mode == "presence":
         print("mode presence: '%' is an upper bound - a present chunk may still hold zeros there")
 

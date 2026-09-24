@@ -83,7 +83,7 @@ have a few hundred.
 
 | flag | what it does |
 |---|---|
-| `--mode voxel` | default. Reads the scan voxel under every cell. Needs to download the chunks that exist. |
+| `--mode voxel` | default. Reads the scan voxel under every cell — exactly, not by chunk. |
 | `--mode presence` | **No downloads.** One `HEAD` per distinct chunk; a cell in a chunk the store does not hold cannot be on data. The reported figure is an *upper bound* and is marked `?`. |
 | `--sample N` | audit a random sample of N cells per surface (`--seed` to pin it) |
 | `--max-chunk-gets N` | refuse a surface that would need more than N chunk downloads (default 400) |
@@ -91,9 +91,26 @@ have a few hundred.
 | `--json FILE` | write the whole table, including the request counts |
 | `--level N` | read a coarser pyramid level of the scan |
 
-`--mode presence` is the one to reach for first. It is free, it needs nothing but HTTP
-`HEAD`, and on a sparse masked scan it already separates a phantom surface from a real one,
-because the air outside the scroll is not stored at all.
+### Reading a voxel costs one byte
+
+The published masked scans are uncompressed `uint8` with `128^3` C-order chunks, so a voxel is
+one byte at a computable offset. `--mode voxel` asks for exactly that byte with a
+`Range: bytes=N-N` request. A `206` carries the voxel; a `404` means the chunk is not in the
+store. One request answers both questions, and no chunk is ever downloaded:
+
+```
+before (whole chunks)   2 surfaces, 259 requests (166 HEAD, 93 GET, 192.9 MB)   2m46s
+after  (byte ranges)    2 surfaces, 2498 requests (166 HEAD, 2332 GET, 0.0 MB)  1m28s
+```
+
+Identical numbers, 193 MB less traffic. If the store is compressed or not single-byte, the
+tool falls back to fetching whole chunks and says so in the JSON (`"reads": "chunk"`).
+
+`--mode presence` is cheaper still — nothing but HTTP `HEAD`, one per distinct chunk — and on a
+sparse masked scan it already separates a phantom surface from a real one, because the air
+outside the scroll is not stored at all. But it is a chunk-resolution signal: in a region
+where every chunk is stored it saturates at 100% and tells you nothing. Use it to triage,
+`--mode voxel` to measure.
 
 ## What the numbers mean
 
