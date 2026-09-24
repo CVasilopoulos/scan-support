@@ -1,5 +1,3 @@
 __pycache__/
 *.pyc
-examples/*.json
-!examples/*.json
 .venv/
