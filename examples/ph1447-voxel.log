@@ -26,5 +26,5 @@ surface                                      cells support     on data  zero vox
 15 surfaces audited, 0 skipped
 8 surface(s) reach outside their own volume; those cells are in the 'outside' column and are not counted as scan data
 support: min 7.5%  median 46.1%  max 100.0%
-wrote /private/tmp/claude-503/-Users-A200270629-Desktop-projects-my-projects-Codenest/893ab8d3-e20d-4641-b3ef-546add1bd9af/scratchpad/ph1447-voxel.json
+wrote ./ph1447-voxel.json
 uv run --no-project --with numpy --with tifffile --with imagecodecs python     290.64s user 58.01s system 37% cpu 15:29.44 total

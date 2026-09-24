@@ -25,5 +25,5 @@ surface                                      cells support     on data  zero vox
 
 15 surfaces audited, 0 skipped
 support: min 17.2%  median 52.7%  max 100.0%
-wrote /private/tmp/claude-503/-Users-A200270629-Desktop-projects-my-projects-Codenest/893ab8d3-e20d-4641-b3ef-546add1bd9af/scratchpad/ph1447-presence.json
+wrote ./ph1447-presence.json
 uv run --no-project --with numpy --with tifffile --with imagecodecs python     51.39s user 10.56s system 21% cpu 4:45.35 total
