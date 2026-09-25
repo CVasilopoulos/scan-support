@@ -358,14 +358,25 @@ coordinate offset (five surfaces on the same volume with the same convention sco
 zero shift, and shifting the worst one produces a monotonic gradient with no peak), and it is
 not the empty-cell marker.
 
-**And they are not normal.** Running the same audit over the rest of the published corpus, one
-sample at a time, the ten worst surfaces measured so far are *exactly* those ten, and then there
-is a gap: the tenth-worst sits at 60.6% of its in-volume cells on data with 32.7% in absent
-chunks, and the eleventh — from a different scroll — at 75.4% and 9.7%. Four healthy samples
-measured alongside it (PHerc0009B, PHerc0343P, PHerc0800, PHerc0841, 64 surfaces) run from 75.4%
-to 100%, and two of them lose nothing at all. Five of the bucket's 45 samples are complete at the
-time of writing and the six largest are still running; `FINDINGS.md` carries the caveat and the
-command to refresh it.
+**And PHerc1447 is not the only place this happens.** The same audit was then run over every
+published tifxyz surface in the bucket — all 45 samples, 808 (segment, volume) pairs across the
+eleven samples that have both surfaces and a published masked scan. The corpus is overwhelmingly
+sound: median 98.9% of in-volume cells on data. But **22 pairs score below 50% and seven below
+25%, and every one of them comes from four samples** — PHerc1667, PHerc1447, PHerc0814 and one
+from PHercParis4.
+
+Because 232 of the 307 segments are published re-expressed into more than one volume, the corpus
+carries its own control: the same surface resampled onto a differently-scaled grid should score
+the same, and it does — median spread between a segment's best and worst volume is 2.5
+percentage points. That control also separates two different faults. Six PHerc1667 segments score
+low on *every* volume they appear in, which is a surface that is off the material. Three
+PHerc0814 segments score **100% on two volumes and 0–49% on a third**, which is not a wandering
+surface at all but something wrong with one volume or with those three re-expressions into it.
+The worst surface in the corpus is one of them: 0.0% on data, 100% of its in-volume cells in
+chunks the scan does not hold, while the same segment sits at 100% elsewhere.
+
+`FINDINGS.md` has the full distribution, the tables, and an open correction — at five samples I
+had written that PHerc1447's ten were the worst anywhere, and the completed sweep refuted it.
 
 These are the surfaces a newcomer reaches for. They open in VC3D, they render, they carry
 sensible areas, and half of one of them is air.

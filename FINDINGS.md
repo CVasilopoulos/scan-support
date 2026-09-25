@@ -106,79 +106,127 @@ for all fifteen.
 ## Against the rest of the published corpus
 
 A single scroll's table does not say whether 46% is bad. So the tool was run the same way over
-every published surface of every sample in the bucket — `--sample 1000 --seed 1`, the whole
-catalogue, one sample at a time.
+**every published tifxyz surface in the bucket** — all 45 samples, `--sample 1000 --seed 1`.
+Eleven samples have published surfaces and a published masked scan to check them against: **808
+(segment, volume) pairs over 307 distinct segments.** 755 of those pairs were read cell by cell;
+the other 53 are on PHerc0172's blosc-compressed scan, where the tool falls back to
+chunk-presence and reports an upper bound rather than pretending to a number it cannot get.
 
-The measure here is *inside support* — cells on data over cells **inside** the volume — which
-discounts the bbox overhang that the catalogue already publishes as `overlap_ratio`, so what is
-left is only the unpublished signal: cells inside the array, in chunks the scan does not hold.
+The measure is *inside support* — cells on data over cells **inside** the volume — which
+discounts the bbox overhang the catalogue already publishes as `overlap_ratio`, leaving only the
+unpublished signal: cells inside the array, in chunks the scan does not hold.
 
-Five samples are complete; six of the larger ones are still being measured.
+### A correction to what I wrote at five samples
+
+With five samples in, the ten lowest-scoring surfaces in the whole set were PHerc1447's ten, and
+I wrote that no other sample behaved like it. **The full corpus refutes that.** PHerc1667 has a
+worse group, and PHerc0814 holds the single worst surface measured. The caveat I attached was the
+right one and it fired. What survives is the measurement of PHerc1447; what does not is the claim
+that it was unique.
+
+### The distribution
 
 ```
-sample                     n      min   median      max   worst-absent
-PHerc0009B                36    77.6%    92.9%    99.9%    11.0%
-PHerc0343P                16    75.4%    99.1%   100.0%     9.7%
-PHerc0800                  6   100.0%   100.0%   100.0%     0.0%
-PHerc0841                  6    99.7%   100.0%   100.0%     0.0%
-PHerc1447                 15     8.2%    50.6%   100.0%    79.0%
+scored cell by cell: 755 pairs
+  median 98.9%   mean 93.6%
+  below 90%: 138  (18.3%)
+  below 75%:  50  ( 6.6%)
+  below 50%:  22  ( 2.9%)
+  below 25%:   7  ( 0.9%)
 ```
 
-Ranked over all 79 surfaces, the ten worst are **exactly** PHerc1447's ten, and then there is a
-gap:
+The published corpus is overwhelmingly sound. The interesting part is the tail, and the tail is
+not spread evenly — **all 22 pairs below 50% come from four samples**:
 
 ```
-  PHerc1447   20250502180708-on-20250521151220-8.64um    8.2% inside   79.0% absent
-  PHerc1447   20250502183421-on-20250521151220-8.64um   38.1%          60.1%
-  PHerc1447   20250502180748-on-20250521151220-8.64um   41.9%          54.7%
-  PHerc1447   20250502184201-on-20250521151220-8.64um   41.9%          49.2%
-  PHerc1447   20250502185519-on-20250521151220-8.64um   44.7%          42.9%
-  PHerc1447   20250502182456-on-20250521151220-8.64um   45.9%          46.8%
-  PHerc1447   20250502184658-on-20250521151220-8.64um   47.9%          44.9%
-  PHerc1447   20250502183138-on-20250521151220-8.64um   50.6%          46.6%
-  PHerc1447   20250502182142-on-20250521151220-8.64um   58.5%          35.2%
-  PHerc1447   20250502184845-on-20250521151220-8.64um   60.6%          32.7%
-  ---------------------------------------------------------------- gap
-  PHerc0343P  20250820160251-on-20250820154339-2.401um  75.4%           9.7%
-  PHerc0009B  20250919135433-on-20250820154339-2.401um  77.6%          11.0%
+below 50%   PHerc1667 11 · PHerc1447 7 · PHerc0814 3 · PHercParis4 1
+below 75%   PHerc1667 20 · PHercParis4 15 · PHerc1447 10 · PHerc0814 5
 ```
 
-The tenth-worst surface sits at 60.6% inside support and 32.7% of its in-volume cells in absent
-chunks; the eleventh at 75.4% and 9.7%. On the axis that matters — cells in chunks the scan does
-not hold — **the worst surface outside PHerc1447 is three times better than the best of
-PHerc1447's ten.** Two whole samples, PHerc0800 and PHerc0841, lose nothing at all.
+### The measure reproduces across volumes
 
-PHerc. 1447 is not a scroll where this is normal, and no other sample measured so far behaves
-like it.
+232 of the 307 segments are published re-expressed into more than one volume, which gives a free
+control: the same surface, independently resampled onto a differently-scaled grid, should score
+the same. It does. **The median spread between a segment's best and worst volume is 2.5
+percentage points**, and the 90th percentile is 13.5. A grid or pairing error would not survive
+that.
 
-*Caveat, stated plainly:* five of the bucket's 45 samples are complete here. The six largest —
-PHercParis4 (199 surfaces), PHerc0139 (189), PHerc0172, PHerc0500P2, PHerc0814 and PHerc1667 —
-are still running, and a later sample could turn up a second low population. That would not
-change what is measured about PHerc1447; it would change how unusual it is. Anyone can refresh
-the whole picture with `summarise-sweep.py` over the sweep directory.
+### Two different faults, which the cross-volume view separates
 
-*Sampling check:* the PHerc1447 table above was measured at 3000 cells per surface; the corpus
-sweep uses 1000. Rerunning PHerc1447 at 1000 gives min 7.8% / median 50.6% / max 100.0% against
-7.5% / 46.1% / 100.0% at 3000 — the same picture, surface by surface, so the ranking is not a
-sampling artefact.
+**A surface that is off the material scores low on every volume it appears in.** Six PHerc1667
+segments do exactly this:
+
+```
+  20260205070000   2.399um = 19%   1.129um = 12%
+  20260203210000   2.399um = 25%   1.129um = 16%
+  20260130150000   2.399um = 31%   1.129um = 17%
+  20260128140000   2.399um = 36%   1.129um = 30%
+  20260123230000   2.399um = 45%   1.129um = 37%
+  20260119120000   2.399um = 53%   1.129um = 45%
+```
+
+as does PHercParis4's `20260623171929` (48% and 61%). PHerc1447's ten belong here too, though
+only one volume is published for that sample so the cross-check is not available.
+
+**One bad pairing looks completely different.** Three PHerc0814 segments score *perfectly* on two
+volumes and badly on a third:
+
+```
+  20260226123353   20250804134230 = 100%   20260309142202 = 100%   20260521123630 =  0%
+  20250925204843   20250804134230 = 100%   20260309142202 = 100%   20260521123630 = 48%
+  20250926165636   20250804134230 = 100%   20260309142202 = 100%   20260521123630 = 49%
+```
+
+These are not wandering surfaces. Whatever is wrong is on the `20260521123630` side — that
+volume's mask, or those three re-expressions into it. `20260226123353-on-20260521123630-1.129um`
+is the single worst surface in the corpus: **0.0% of its in-volume cells on data, 100% of them in
+chunks the scan does not hold**, with a further 67.1% of its cells outside the array entirely —
+while the same segment sits at 100% on two other volumes.
+
+That distinction is the thing a bbox overlap figure cannot give you, and it is the reason the
+four buckets are kept apart.
+
+*Sampling check:* PHerc1447 was also measured at 3000 cells per surface, against the sweep's
+1000: min 7.8% / median 50.6% / max 100.0% versus 7.5% / 46.1% / 100.0%, surface by surface. The
+ranking is not a sampling artefact.
 
 ## Why it matters
 
-These are exactly the surfaces a newcomer reaches for. They are the published segments of a
-published scroll, they open in VC3D, they render, they carry sensible areas, and half of one
-of them is air. A tracer extended from one, a model fine-tuned on one, or a flattening
-evaluated against one inherits that silently.
+These are exactly the surfaces a newcomer reaches for. They are the published segments of
+published scrolls, they open in VC3D, they render, they carry sensible areas, and half of one of
+them is air. A tracer extended from one, a model fine-tuned on one, or a flattening evaluated
+against one inherits that silently, and nothing in the published metadata warns them.
+
+97% of the corpus is fine, which is the point: the 22 pairs that are not are invisible precisely
+because everything around them is sound. They are also few enough to be looked at by hand, and
+the list is above.
 
 ## Reproducing it
 
 ```
-pip install numpy tifffile imagecodecs
-python scan_support.py --scroll PHerc1447 --sample 3000 --seed 1 --workers 24
+pip install numpy tifffile imagecodecs        # numcodecs too, for PHerc0172's blosc scan
+python scan_support.py --scroll PHerc1447 --sample 1000 --seed 1 --workers 24
 ```
 
-Fifteen surfaces, 15m29s, 45,000 single-byte range requests, no chunk downloaded. Drop
-`--sample` for every cell, or add `--mode presence` for a HEAD-only triage pass that takes
-four minutes and no body bytes at all.
+One scroll: fifteen surfaces, a few minutes, single-byte range requests, no chunk downloaded.
+`--mode presence` is a HEAD-only triage pass that costs no body bytes at all but saturates at
+100% wherever every chunk is stored, so it triages and does not measure.
+
+The whole corpus is the same command over each sample in the bucket. It took about twelve hours
+on a home connection, and `summarise-sweep.py` aggregates the per-sample JSON:
+
+```
+for s in $(list the bucket's top-level prefixes); do
+    python scan_support.py --scroll "$s" --sample 1000 --seed 1 --workers 24 --json out/$s.json
+done
+python3 summarise-sweep.py out/
+```
+
+`--json` is written after every surface and replaced atomically, so a run that is interrupted
+keeps everything it has already measured. That is not a detail: the first pass of this sweep put
+a one-hour cap on each sample, six samples hit it, and because the file was only written at the
+end, all six lost every row they had measured. Fixing that was the one bug this exercise found in
+the tool itself, and it is the same bug the report in front of this one is about.
 
 ---
 
