@@ -183,6 +183,23 @@ code. It needs no network and takes under a second.
 
 ## What it found
 
+Run over **every published tifxyz surface in the open-data bucket** — 45 samples, 808
+(segment, volume) pairs across the eleven with both surfaces and a published masked scan — the
+corpus is overwhelmingly sound: median 98.9% of in-volume cells on data. 22 pairs score below
+50% and they come from four samples. 232 segments are published against more than one volume,
+which gives a control: the median spread between a segment's best and worst volume is 2.5
+percentage points.
+
+[FINDINGS.md](FINDINGS.md) has the distribution, the tables and the two distinct faults the
+cross-volume view separates. [examples/corpus/](examples/corpus/) holds the per-sample JSON so
+every number can be rechecked:
+
+```
+python3 summarise-sweep.py examples/corpus/
+```
+
+## The PHerc1447 case
+
 Run over every published surface of PHerc. 1447, it splits them into two populations: five
 score 98.2%–100.0%, four of those with 3000 of 3000 sampled cells on data; ten score 7.5%–56.7%,
 with between 793 and 2331 of their 3000 cells in chunks the raw masked scan does not hold at
